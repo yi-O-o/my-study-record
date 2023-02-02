@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        //bind可以用做一般的函数改变this指向
+        //也可以用做构造函数
+        Function.prototype.myBind = function (context, ...args) {
+            newContext = this
+            function binded(...args2) {
+                console.log("this", this);
+                if (this instanceof binded) {
+                    //构造函数this指向binded 这个this指向的是 谁new的指向谁 
+                    newContext.apply(this, args.concat(args2))
+                } else {
+                    //一般的函数
+                    newContext.apply(context, args.concat(args2))
+                }
+            }
+            //再这个外面this指向的是调用bind的函数  新构造函数的原型应该继承旧的构造函数
+            // binded.prototype = this.prototype  //这样就会当新的构造函数原型改变则久的也回改
+            //解决方法 用一个新的空函数开接受久的构造函数
+            function emptyFun() { }
+            emptyFun.prototype = this.prototype
+            binded.prototype = new emptyFun()
+            return binded
+        }
+
+        var obj = {
+            name: "jinyicai",
+        }
+        function addStuff(age, sex) {
+            this.age = age
+            this.sex = sex
+        }
+        let consAddStuff = addStuff.myBind(null,"19")
+        let con1 =new consAddStuff("女")
+        let con2 =new consAddStuff("男")
+        console.log('con1', con2);
+    </script>
+</body>
+
+</html>

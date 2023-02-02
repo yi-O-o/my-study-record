@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        //把this放到一个对象里面 然后把调用call的方法的函数也放到对象里面这样就可以访问到了
+        Function.prototype.myCall = function (context, ...args) {
+            //将对象保存起来
+            let newContext = context || window
+            //给对象添加一个属性  保存调用者 就是这个函数
+            newContext.fn = this
+            //将调用者的执行保存起来
+            let result = newContext.fn(...args)
+            //删除
+            delete newContext.fn 
+            //返回
+            return result
+        }
+        var a = 'win'
+        let obj = {
+            a: "obj"
+        }
+        function r(a,b) {
+            console.log(a+b);
+            console.log(this.a);
+        }
+        r.myCall(obj,1,2);
+        console.log(obj);
+    </script>
+</body>
+
+</html>

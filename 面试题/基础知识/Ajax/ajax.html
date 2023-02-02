@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .main{
+            width: 200px;
+            height: 200px;
+            border:1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+    </div>    
+
+    <button class="btn">发请请求</button>
+
+    <script>
+        const btn = document.getElementsByClassName('btn')[0]
+        const div =  document.getElementsByClassName('main')[0]
+        //用户重复点击请求
+        /*
+        1.创建一个变量 来确定 请求是否完成
+        2.没有完成则 取消上面的请求发送新的请求
+        注意如果要取消用户重复点一定要把xhr对象在判断之后
+        不然xhr会重新建立对象 不再是原来的请求了
+        */
+        //重复点击请求变量
+       let isSend = false
+       let xhr 
+            btn.addEventListener('click',function () {         
+                if(isSend) xhr.abort()
+                //1.建立对象
+                xhr = new XMLHttpRequest()
+                console.log(xhr);
+                //判断是否再一次请求
+
+                //设置超时事件
+                xhr.timeout = 1000
+                //超时回调
+                xhr.ontimeout = () => {
+                    alert("超时拉")
+                }
+    
+                //网络异常回
+                xhr.onerror = function(){
+                    alert("网络异常")
+                }
+
+               //数据从json变成对象
+               xhr.responseType = 'json'
+               //2.初始化 设置类型与url
+               xhr.open('get','http://39.98.123.211/api/item/2')
+                isSend = true
+               //3.发送请求
+               xhr.send()
+               //4.事件绑定
+               xhr.onreadystatechange = function(){
+                   if(xhr.readyState === 4){
+                       isSend = false
+                       if(xhr.status == 200){
+                           console.log(xhr.response);
+                        div.innerHTML = xhr.response.data
+                       }
+                   }
+               }
+              })
+        
+           
+        </script>
+</body>
+
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        function myBind(context, ...ages1) {
+            let newContext = this
+            function binded(...ages2) {
+                if (this instanceof binded) {
+                    //这个this是new谁直向谁
+                    newContext.apply(this, ages1.concat(ages2))
+                } else {
+                    newContext.apply(context, ages1.concat(ages2))
+                }
+            }
+            function emptyFunc() { }
+            emptyFunc.prototype = this.prototype
+            binded.prototype = new emptyFunc()
+            return binded
+        }
+        function a(a1) {
+            console.log(a1); 
+            console.log(this.name)
+            return 2
+         }
+        
+        Function.prototype.myApply = function(context, ages) {
+            let nexContext = context
+            nexContext.fn = this
+            let result  = nexContext.fn(...ages)
+            delete nexContext.fn
+            return result
+        }
+        console.log(a.myApply({name:"金奕财"},[2]));
+    </script>
+</body>
+
+</html>

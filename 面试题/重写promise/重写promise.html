@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        //重写promise的类
+        /**
+         * promise状态冻结的
+         * 要实现 三个状态 + then + catch +异步操作
+         * promise 有3个状态
+         * 第一个状态 pending 等待
+         * 第二个状态 fulfilled 成功
+         * 第三个状态 rejected 失败
+         * 
+         */
+        class MyPromise {
+            constructor(executor) {
+                this.state = 'pending'
+                //成功的值
+                this.value = undefined
+                //失败的值 reason (原理 理由)
+                this.reason = undefined
+                //将then中的回调函数收集起来 因为等到promise中的resolve或者reject执行了才能执行then否则会出现先执行then再执行resolve或者reject
+                this.OnFulFilledCallbacks = []
+                this.OnRejectCallbacks = []
+                //重写resolve 和 reject 方法
+                let resolve = (value) => {
+                    if (this.state === 'pending') {
+                        this.state = "fulfilled"
+                        this.value = value
+                        //防止then还没有执行完毕，成功状态还没有添加到这里就有同步了，then是异步的，forEach是同步的
+                        //then是微任务所以要在这里加一个定时器变成宏任务，在then执行完之后执行
+                        setTimeout(() => {
+                            this.OnFulFilledCallbacks.forEach(element => {
+                                element()
+                            });
+                        }, 0)
+                        console.log("我是成功");
+                    }
+                }
+                let reject = (reason) => {
+                    if (this.state === 'pending') {
+                        this.state = "rejected"
+                        this.reason = reason
+                        setTimeout(() => {
+                            this.OnRejectCallbacks.forEach(element => {
+                                element()
+                            });
+                        }, 0)
+                        console.log("我是失败");
+                    }
+                }
+
+                //判断输入的是不是函数
+                try {
+                    executor(resolve, reject)
+                } catch (err) {
+                    reject(err)
+                }
+            }
+            //then是共享的方法
+
+            then(OnFulFilled, OnReject) {
+                return new MyPromise((resolve, reject) => {
+                    if (this.state === 'pending') {
+                        // 异步的话 状态一直都是pending 一直到异步结束 所以要加入状态事件池中
+                        this.OnFulFilledCallbacks.push(() => {
+                            try {
+                                let x = OnFulFilled(this.value)
+                                //用返回的promise的状态来控制本次返回的promise的状态从而达到控制下一次then执行那一个回调函数
+                                x instanceof MyPromise ? x.then(data => {
+                                    resolve(data)
+                                }, err => {
+                                    reject(err)
+                                }) : resolve(x)
+                            } catch (Err) {
+                                reject(Err)
+                            }
+                        })
+
+                        this.OnRejectCallbacks.push(() => {
+                            try {
+                                let x = OnReject(this.reason)
+                                x instanceof MyPromise ? x.then(resolve, reject) : reject(x)
+                            } catch (err) {
+                                reject(err)
+                            }
+                        })
+
+                    }
+                    if (this.state === 'fulfilled') {
+                        OnFulFilled(this.value)
+
+                    }
+                    if (this.state === "rejected") {
+                        OnReject(this.reason)
+
+                    }
+                })
+
+            }
+        }
+
+        //实例化promise
+        let p = new MyPromise((resolve, reject) => {
+            setTimeout(() => {
+                resolve(23323)
+            }, 3)
+        })
+
+        p.then((res) => {
+            console.log(0);
+            console.log(res);
+            return new MyPromise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve(2331232131223)
+                }, 3)
+            })
+        }, (err) => {
+            console.log(err);
+            console.log(1);
+        }).then(res => {
+            console.log("2", res);
+            console.log(2);
+        }, err => {
+            console.log(err);
+            console.log(3);
+        })
+    </script>
+</body>
+
+</html>

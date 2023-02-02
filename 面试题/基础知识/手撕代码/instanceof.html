@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        //instanceof的作用
+        /**
+         * 1.判断构造函数的prototype是不是在实列的原型链上
+         * 2.不能判断基本类型一定要是new出来的
+         */
+        console.log(myInstanceof([], Object))
+        // function myInstanceof(obj, classFunc) {
+        //     if (typeof classFunc !== 'function') throw new Error("Right-hand side of 'instanceof' is not an object")
+        //     let proto = obj.__proto__
+        //     while (true) {
+        //         if (proto == classFunc.prototype) {
+        //             return true
+        //         }
+        //         if (proto == null) {
+        //             return false
+        //         }
+        //         proto = proto.__proto__
+        //     }
+        // }
+function myInstanceof(obj,classFunc) { 
+    if(typeof classFunc !== 'function') throw new Error("instanceof is not an object" )
+    let proto = obj.__proto__
+    while(true){
+        if(proto === null) return false
+        if(proto === classFunc.prototype) return true
+        proto = proto.__proto__
+    }
+ }
+    </script>
+</body>
+
+</html>
